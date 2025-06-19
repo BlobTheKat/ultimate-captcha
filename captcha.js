@@ -48,22 +48,22 @@ void kernel(inout uvec2 state){
 	if(err) console.warn(err)
 	gl.useProgram(p)
 	gl.uniform1i(gl.getUniformLocation(p, 'last'), 1)
-	const res = new Uint32Array(512)
-	for(let i = 0; i < 256; i++) res[i<<1|1] = i
+	const res = new Uint32Array(128)
+	for(let i = 0; i < 64; i++) res[i<<1|1] = i
 	const fb = gl.createFramebuffer(), p1 = gl.createTexture(), p2 = gl.createTexture()
 	gl.bindFramebuffer(gl.FRAMEBUFFER, fb)
 	gl.activeTexture(gl.TEXTURE1)
 	gl.bindTexture(gl.TEXTURE_2D, p1)
-	gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RG32UI, 16, 16)
-	gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 16, 16, gl.RG_INTEGER, gl.UNSIGNED_INT, res)
+	gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RG32UI, 8, 8)
+	gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 8, 8, gl.RG_INTEGER, gl.UNSIGNED_INT, res)
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 	gl.bindTexture(gl.TEXTURE_2D, p2)
-	gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RG32UI, 16, 16)
-	gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 16, 16, gl.RG_INTEGER, gl.UNSIGNED_INT, res)
+	gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RG32UI, 8, 8)
+	gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 8, 8, gl.RG_INTEGER, gl.UNSIGNED_INT, res)
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.viewport(0, 0, 16, 16)
+	gl.viewport(0, 0, 8, 8)
 	document.body.textContent = `Captcha ready! (took ${(performance.now() - t0).toFixed(2)}ms)\n\n`
 	const t1 = performance.now()
 	const ROUNDS = 256
@@ -72,9 +72,9 @@ void kernel(inout uvec2 state){
 		gl.bindTexture(gl.TEXTURE_2D, i&1?p1:p2)
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3)
 	}
-	gl.readPixels(0, 0, 16, 16, gl.RG_INTEGER, gl.UNSIGNED_INT, res)
+	gl.readPixels(0, 0, 8, 8, gl.RG_INTEGER, gl.UNSIGNED_INT, res)
 	let acc = 0
-	for(let i=0;i<256;i++) acc += res[i<<1]
+	for(let i=0;i<64;i++) acc += res[i<<1]
 	document.body.textContent += `Captcha completed in ${(performance.now() - t1).toFixed(2)}ms\nhash: ${(acc>>>0).toString(16).padStart(8, '0')}`
 }
 export default Captcha

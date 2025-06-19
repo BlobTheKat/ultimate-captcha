@@ -38,11 +38,13 @@ int main(){
 		xsh ^= xsh >> 17;
 		xsh ^= xsh << 5;
 	}
-	top = 256; at = 0;
+	top = 64; at = 0;
 	long long thc = thread::hardware_concurrency();
 	thread* ths = new thread[thc];
+	auto t0 = chrono::high_resolution_clock::now();
 	for(int i=0;i<thc;i++) ths[i] = thread(work);
 	for(int i=0;i<thc;i++) ths[i].join();
-	cout << double(totalTime)/1'000'000 << "ms" << endl;
+	double real = (chrono::high_resolution_clock::now() - t0).count();
+	cout << "CPU: " << double(totalTime)/1'000'000 << "ms / threads: " << thc << "\nReal: " << real/1'000'000 << "ms" << endl;
 	cout << "hash: " << setfill('0') << setw(8) << hex << total << endl;
 }
