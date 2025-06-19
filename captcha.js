@@ -7,11 +7,11 @@ export function Captcha(challenge){
 	gl.bindTexture(gl.TEXTURE_2D_ARRAY, tex)
 	gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA32UI, 256, 256, 256)
 	const heap = new Uint32Array(1<<26)
-	let xsh = Math.floor(Math.random()*4294967296)|0
+	let xsh = 9999
 	for(let i = 0; i < (1<<26); i++){
 		heap[i] = xsh;
 		xsh ^= xsh << 13;
-		xsh ^= xsh >> 17;
+		xsh ^= xsh >>> 17;
 		xsh ^= xsh << 5;
 	}
 	gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, 0, 256, 256, 256, gl.RGBA_INTEGER, gl.UNSIGNED_INT, heap)
@@ -74,7 +74,7 @@ void kernel(inout uvec2 state){
 	}
 	gl.readPixels(0, 0, 16, 16, gl.RG_INTEGER, gl.UNSIGNED_INT, res)
 	let acc = 0
-	for(const x of res) acc += x
+	for(let i=0;i<256;i++) acc += res[i<<1]
 	document.body.textContent += `Captcha completed in ${(performance.now() - t1).toFixed(2)}ms\nhash: ${(acc>>>0).toString(16).padStart(8, '0')}`
 }
 export default Captcha

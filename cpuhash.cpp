@@ -6,13 +6,13 @@
 #include <chrono>
 #include <iomanip>
 using namespace std;
-#define uint unsigned
+typedef uint32_t uint;
 
 uint heap[1<<26];
 
 uint kernel(uint id){
 	uint ret = 0u;
-	for(int i=0;i<65536;i++){
+	for(int i=0;i<1048576;i++){
 		id = heap[id&67108863];
 		ret ^= id;
 	}
@@ -30,7 +30,7 @@ void work(){
 }
 
 int main(){
-	uint32_t xsh = time(NULL);
+	uint xsh = 9999;
 	if(!xsh) xsh = 0xFFFFFFFF;
 	for(int i=0;i<(1<<26);i++){
 		heap[i] = xsh;
