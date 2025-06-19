@@ -38,7 +38,7 @@ int main(){
 		xsh ^= xsh >> 17;
 		xsh ^= xsh << 5;
 	}
-	top = 64; at = 0;
+	top = 256; at = 0;
 	long long thc = thread::hardware_concurrency();
 	thread* ths = new thread[thc];
 	auto t0 = chrono::high_resolution_clock::now();
