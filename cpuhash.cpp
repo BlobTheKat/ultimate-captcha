@@ -8,12 +8,14 @@
 using namespace std;
 typedef uint32_t uint;
 
-uint heap[1<<26];
+#define SIZE_MB 4
+
+uint heap[(1<<18) * SIZE_MB];
 
 uint kernel(uint id){
 	uint ret = 0u;
 	for(int i=0;i<1048576;i++){
-		id = heap[id&67108863];
+		id += heap[id % (262144*SIZE_MB)] + id%2560087993u;
 		ret ^= id;
 	}
 	return ret;
@@ -32,13 +34,13 @@ void work(){
 int main(){
 	uint xsh = 9999;
 	if(!xsh) xsh = 0xFFFFFFFF;
-	for(int i=0;i<(1<<26);i++){
+	for(int i=0;i<(1<<18)*SIZE_MB;i++){
 		heap[i] = xsh;
 		xsh ^= xsh << 13;
 		xsh ^= xsh >> 17;
 		xsh ^= xsh << 5;
 	}
-	top = 256; at = 0;
+	top = 1024; at = 0;
 	long long thc = thread::hardware_concurrency();
 	thread* ths = new thread[thc];
 	auto t0 = chrono::high_resolution_clock::now();
