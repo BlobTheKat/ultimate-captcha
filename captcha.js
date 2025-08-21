@@ -1,5 +1,5 @@
 export function Captcha(challenge){
-	const SIZE_MB = 16
+	const SIZE_MB = 64
 	const t0 = performance.now()
 	const canvas = document.createElement('canvas')
 	const gl = canvas.getContext('webgl2')

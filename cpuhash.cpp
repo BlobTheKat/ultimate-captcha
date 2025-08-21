@@ -8,7 +8,7 @@
 using namespace std;
 typedef uint32_t uint;
 
-#define SIZE_MB 16
+#define SIZE_MB 64
 
 uint heap[(1<<18) * SIZE_MB];
 
