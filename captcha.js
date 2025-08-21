@@ -1,5 +1,5 @@
 export function Captcha(challenge){
-	const SIZE_MB = 128
+	const SIZE_MB = 16
 	const t0 = performance.now()
 	const canvas = document.createElement('canvas')
 	const gl = canvas.getContext('webgl2')
@@ -84,7 +84,7 @@ void iter(inout uvec2 v){
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 	gl.viewport(0, 0, W, H)
-	document.body.textContent = `Captcha ready! (took ${(performance.now() - t0).toFixed(2)}ms)\n\n`
+	document.body.textContent = `Captcha params: ${W}x${H}, heap: ${SIZE_MB}MB\nCaptcha ready! (took ${(performance.now() - t0).toFixed(2)}ms)\n\n`
 	const t1 = performance.now()
 	const ROUNDS = 256
 	for(let i = 0; i < ROUNDS; i++){
