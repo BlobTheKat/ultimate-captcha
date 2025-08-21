@@ -8,17 +8,30 @@
 using namespace std;
 typedef uint32_t uint;
 
-#define SIZE_MB 4
+#define SIZE_MB 128
 
 uint heap[(1<<18) * SIZE_MB];
 
-uint kernel(uint id){
-	uint ret = 0u;
-	for(int i=0;i<1048576;i++){
-		id += heap[id % (262144*SIZE_MB)] + id%2560087993u;
-		ret ^= id;
+uint fetch(uint i, uint r){ return heap[i&0x3ffff|r%SIZE_MB<<18]; }
+
+uint kernel(uint y){
+	uint x = 0;
+	for(uint r=0;r<262144;r++){
+		uint id = x;
+		uint a = fetch(y, r), m = a>>3;
+		switch(a&7){
+			case 0: id ^= fetch(id+m%123, r); break;
+			case 1: id ^= fetch(id+m/456, r); break;
+			case 2: id ^= fetch(id+m%997, r); break;
+			case 3: id ^= fetch(id+m/451, r); break;
+			case 4: id ^= fetch(id+m%409, r); break;
+			case 5: id ^= fetch(id+m/111, r); break;
+			case 6: id ^= fetch(id+m%789, r); break;
+			case 7: id ^= fetch(id+m/333, r); break;
+		}
+		y = x; x = id;
 	}
-	return ret;
+	return x;
 }
 atomic_uint at; int top;
 atomic<uint64_t> totalTime;
@@ -40,7 +53,7 @@ int main(){
 		xsh ^= xsh >> 17;
 		xsh ^= xsh << 5;
 	}
-	top = 1024; at = 0;
+	top = 512; at = 0;
 	long long thc = thread::hardware_concurrency();
 	thread* ths = new thread[thc];
 	auto t0 = chrono::high_resolution_clock::now();

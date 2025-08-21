@@ -1,5 +1,5 @@
 export function Captcha(challenge){
-	const SIZE_MB = 256
+	const SIZE_MB = 128
 	const t0 = performance.now()
 	const canvas = document.createElement('canvas')
 	const gl = canvas.getContext('webgl2')
@@ -7,9 +7,9 @@ export function Captcha(challenge){
 	const tex = gl.createTexture()
 	gl.bindTexture(gl.TEXTURE_2D_ARRAY, tex)
 	gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA32UI, 256, 256, SIZE_MB)
-	const heap = new Uint32Array((1<<18) * SIZE_MB)
+	const heap = new Uint32Array(SIZE_MB<<18)
 	let xsh = 9999
-	for(let i = 0; i < (1<<26); i++){
+	for(let i = 0; i < (SIZE_MB<<18); i++){
 		heap[i] = xsh;
 		xsh ^= xsh << 13;
 		xsh ^= xsh >>> 17;
@@ -28,28 +28,34 @@ uniform usampler2DArray heap;
 uniform usampler2D last;
 uniform uint round;
 out uvec2 ret;
-void kernel(inout uvec2);
+void iter(inout uvec2);
+uint r;
 void main(){
+	r = round<<10;
 	ret = texelFetch(last, ivec2(gl_FragCoord.xy), 0).xy;
-	kernel(ret);
+	for(uint r2=r+1024u;r<r2;r++){
+		iter(ret);
+	}
 }
 uint fetch(uint id){
-	return texelFetch(heap, ivec3(id>>2&255u, id>>10&255u, round), 0)[id&3u];
+	uvec4 a = texelFetch(heap, ivec3(id>>2&255u, id>>10&255u, r%${SIZE_MB}u), 0);
+	uvec2 b = (id&2u)!=0u?a.zw:a.xy;
+	return (id&1u)!=0u?b.y:b.x;
 }
-void kernel(inout uvec2 state){
-	uint id = state.y;
-	for(int i=0;i<2048;i++){
-		uint x = fetch(id), m = x/5u;
-		switch(x-m*5u){
-			case 0u: id += fetch(m^id%2561087993u); break;
-			case 1u: id -= fetch(m^id); break;
-			case 2u: id ^= fetch(m-id%2561087993u); break;
-			case 3u: id ^= fetch(m+id/63u); break;
-			case 4u: id += fetch(m^id/12u); break;
-		}
-		state.x ^= id;
+void iter(inout uvec2 v){
+	uint id = v.x;
+	uint a = fetch(v.y), m = a>>3;
+	switch(a&7u){
+		case 0u: id ^= fetch(id+m%123u); break;
+		case 1u: id ^= fetch(id+m/456u); break;
+		case 2u: id ^= fetch(id+m%997u); break;
+		case 3u: id ^= fetch(id+m/451u); break;
+		case 4u: id ^= fetch(id+m%409u); break;
+		case 5u: id ^= fetch(id+m/111u); break;
+		case 6u: id ^= fetch(id+m%789u); break;
+		case 7u: id ^= fetch(id+m/333u); break;
 	}
-	state.y = id;
+	v.y = v.x; v.x = id;
 }`)
 	gl.compileShader(f)
 	let err = gl.getShaderInfoLog(f)
@@ -89,7 +95,7 @@ void kernel(inout uvec2 state){
 	}
 	gl.readPixels(0, 0, W, H, gl.RG_INTEGER, gl.UNSIGNED_INT, res)
 	let acc = 0
-	for(let i=0;i<256;i++) acc += res[i<<1]
+	for(let i=0;i<W*H;i++) acc += res[i<<1]
 	document.body.textContent += `Captcha completed in ${(performance.now() - t1).toFixed(2)}ms\nhash: ${(acc>>>0).toString(16).padStart(8, '0')}`
 }
 export default Captcha
