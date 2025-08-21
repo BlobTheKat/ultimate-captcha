@@ -8,26 +8,34 @@
 using namespace std;
 typedef uint32_t uint;
 
-#define SIZE_MB 64
+#define SIZE_MB 128
 
 uint heap[(1<<18) * SIZE_MB];
 
-uint fetch(uint i, uint r){ return heap[i&0x3ffff|r%SIZE_MB<<18]; }
+#define fetch(i) heap[(i)&0x3ffff|r%SIZE_MB<<18]
 
 uint kernel(uint y){
 	uint x = 0;
 	for(uint r=0;r<262144;r++){
 		uint id = x;
-		uint a = fetch(y, r), m = a>>3;
-		switch(a&7){
-			case 0: id ^= fetch(id+m%123, r); break;
-			case 1: id ^= fetch(id+m/456, r); break;
-			case 2: id ^= fetch(id+m%997, r); break;
-			case 3: id ^= fetch(id+m/451, r); break;
-			case 4: id ^= fetch(id+m%409, r); break;
-			case 5: id ^= fetch(id+m/111, r); break;
-			case 6: id ^= fetch(id+m%789, r); break;
-			case 7: id ^= fetch(id+m/333, r); break;
+		uint a = fetch(y), m = a>>3;
+		switch(a&7u){
+			case 0u: id ^= fetch(fetch(fetch(fetch(id+m%123u)))); break;
+			case 1u: id ^= fetch(fetch(id+m/456u)); break;
+			case 2u: id ^= fetch(id+m%997u); break;
+			case 3u: id ^= fetch(id+m/451u); break;
+			case 4u: id ^= fetch(fetch(fetch(fetch(id+m%409u)))); break;
+			case 5u: id ^= fetch(id+m/111u); break;
+			case 6u: id ^= fetch(id+m%789u); break;
+			case 7u: id ^= fetch(id+m/333u); break;
+			case 8u: id += fetch(fetch(fetch(id+m%125u))); break;
+			case 9u: id += fetch(id+m/458u); break;
+			case 10u: id += fetch(fetch(id+m%999u)); break;
+			case 11u: id += fetch(id+m/453u); break;
+			case 12u: id += fetch(fetch(id+m%411u)); break;
+			case 13u: id += fetch(id+m/113u); break;
+			case 14u: id += fetch(fetch(fetch(id+m%791u))); break;
+			case 15u: id += fetch(id+m/335u); break;
 		}
 		y = x; x = id;
 	}

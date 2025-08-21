@@ -1,5 +1,5 @@
 export function Captcha(challenge){
-	const SIZE_MB = 64
+	const SIZE_MB = 128
 	const t0 = performance.now()
 	const canvas = document.createElement('canvas')
 	const gl = canvas.getContext('webgl2')
@@ -31,9 +31,9 @@ out uvec2 ret;
 void iter(inout uvec2);
 uint r;
 void main(){
-	r = round<<10;
+	r = round*512u;
 	ret = texelFetch(last, ivec2(gl_FragCoord.xy), 0).xy;
-	for(uint r2=r+1024u;r<r2;r++){
+	for(uint r2=r+512u;r<r2;r++){
 		iter(ret);
 	}
 }
@@ -45,15 +45,23 @@ uint fetch(uint id){
 void iter(inout uvec2 v){
 	uint id = v.x;
 	uint a = fetch(v.y), m = a>>3;
-	switch(a&7u){
-		case 0u: id ^= fetch(id+m%123u); break;
-		case 1u: id ^= fetch(id+m/456u); break;
+	switch(a&15u){
+		case 0u: id ^= fetch(fetch(fetch(fetch(id+m%123u)))); break;
+		case 1u: id ^= fetch(fetch(id+m/456u)); break;
 		case 2u: id ^= fetch(id+m%997u); break;
 		case 3u: id ^= fetch(id+m/451u); break;
-		case 4u: id ^= fetch(id+m%409u); break;
+		case 4u: id ^= fetch(fetch(fetch(fetch(id+m%409u)))); break;
 		case 5u: id ^= fetch(id+m/111u); break;
 		case 6u: id ^= fetch(id+m%789u); break;
 		case 7u: id ^= fetch(id+m/333u); break;
+		case 8u: id += fetch(fetch(fetch(id+m%125u))); break;
+		case 9u: id += fetch(id+m/458u); break;
+		case 10u: id += fetch(fetch(id+m%999u)); break;
+		case 11u: id += fetch(id+m/453u); break;
+		case 12u: id += fetch(fetch(id+m%411u)); break;
+		case 13u: id += fetch(id+m/113u); break;
+		case 14u: id += fetch(fetch(fetch(id+m%791u))); break;
+		case 15u: id += fetch(id+m/335u); break;
 	}
 	v.y = v.x; v.x = id;
 }`)
