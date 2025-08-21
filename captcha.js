@@ -39,14 +39,13 @@ uint fetch(uint id){
 void kernel(inout uvec2 state){
 	uint id = state.y;
 	for(int i=0;i<2048;i++){
-		if((id/63u&1u) != 0u){
-			if((id/12u&1u) != 0u){
-				id += fetch(id) + id%2560087993u;
-			}else id -= fetch(id+1u) ^ id;
-		}else{
-			if((id/11u&1u) != 0u){
-				id += fetch(id-2u) + id/5u;
-			}else id ^= fetch(id-1u);
+		uint x = fetch(id), m = x/5u;
+		switch(x-m*5u){
+			case 0u: id += fetch(m^id%2561087993u); break;
+			case 1u: id -= fetch(m^id); break;
+			case 2u: id ^= fetch(m-id%2561087993u); break;
+			case 3u: id ^= fetch(m+id/63u); break;
+			case 4u: id += fetch(m^id/12u); break;
 		}
 		state.x ^= id;
 	}
